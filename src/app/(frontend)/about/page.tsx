@@ -1,0 +1,84 @@
+import Link from 'next/link'
+
+export const metadata = {
+  title: 'About — U.S. House Tracker',
+  description: 'About this site: how it works, where the data comes from, and how to use it.',
+}
+
+export default function AboutPage() {
+  return (
+    <article>
+      <h1>About House Tracker</h1>
+      <p className="muted">A plain-language window into the U.S. House of Representatives.</p>
+
+      <h2>What this is</h2>
+      <p>
+        House Tracker follows the bills moving through the U.S. House of Representatives and the
+        members behind them. It is built for people who want to know what their representatives are
+        working on without wading through procedural jargon.
+      </p>
+      <p>
+        Every bill page shows who introduced it, the most recent action taken on it, and a readable
+        summary of its current status. Every member page lists the bills they have sponsored, most
+        recent first.
+      </p>
+
+      <h2>Why this matters</h2>
+      <p>
+        Representative democracy rests on a simple bargain: we send people to Washington to act on
+        our behalf, and in return we get to see what they do there. Trust is not given once at the
+        ballot box and then forgotten — it is earned, or lost, in the daily work of legislating.
+      </p>
+      <p>
+        That trust depends on transparency. When the work of Congress is visible — the bills
+        introduced, the votes cast, the priorities pursued — constituents can hold their
+        representatives accountable, recognize good work, and push back when something is off. When
+        that work is hidden behind procedural language or scattered across hard-to-navigate systems,
+        accountability quietly erodes.
+      </p>
+      <p>
+        House Tracker exists to make the daily work of the House legible to the people it is meant
+        to serve. Not as advocacy, and not as commentary — just as a clear view of what your
+        representatives are actually doing.
+      </p>
+
+      <h2>Where the data comes from</h2>
+      <p>
+        All legislative data is sourced from the official{' '}
+        <a href="https://api.congress.gov/" target="_blank" rel="noopener noreferrer">
+          Congress.gov API
+        </a>
+        , maintained by the Library of Congress. Bill text, sponsor information, and action
+        histories are updated regularly from that source.
+      </p>
+      <p>
+        Member photographs are provided by the Bioguide, the official biographical directory of the
+        United States Congress.
+      </p>
+
+      <h2>Who made this</h2>
+      <p>
+        House Tracker was built by{' '}
+        <a href="https://github.com/numbersoffice/" target="_blank" rel="noopener noreferrer">
+          Numbers Office
+        </a>
+        , a small group that builds open-source software focused on community, privacy,
+        and positive impact. This project is open source — you can read the code, file
+        issues, or contribute on GitHub.
+      </p>
+
+      <h2>A note on neutrality</h2>
+      <p>
+        This site does not take positions on legislation. Bills are presented as they are recorded
+        in the public record; party labels are shown only as factual identifiers attached to each
+        member.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Found a bug, a mistake in the data, or have a suggestion? Reach out and let us know —
+        feedback is welcome.
+      </p>
+    </article>
+  )
+}

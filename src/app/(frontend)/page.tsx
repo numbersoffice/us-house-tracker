@@ -1,59 +1,48 @@
-import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
+import Link from 'next/link'
 import { getPayload } from 'payload'
-import React from 'react'
-import { fileURLToPath } from 'url'
-
-import config from '@/payload.config'
-import './styles.css'
+import config from '@payload-config'
+import { BillRow } from '@/components/BillRow'
+import type { Bill, Member } from '@/payload-types'
 
 export default async function HomePage() {
-  const headers = await getHeaders()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
+  const payload = await getPayload({ config: await config })
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  const recent = await payload.find({
+    collection: 'bills',
+    sort: '-latestActionDate',
+    limit: 10,
+    depth: 1,
+  })
 
   return (
-    <div className="home">
-      <div className="content">
-        <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
-        <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
-          </a>
+    <>
+      <section className="hero" aria-label="The west front of the United States Capitol">
+        <h1>See your representatives at work.</h1>
+        <p>
+          Democracy works best when transparent and trusted. Have a look at what your
+          representatives are doing.
+        </p>
+        <div className="hero-actions">
+          <Link href="/members" className="btn btn-primary">
+            Find your representative →
+          </Link>
+          <Link href="/bills" className="btn btn-secondary">
+            Explore all bills
+          </Link>
         </div>
-      </div>
-      <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
-      </div>
-    </div>
+      </section>
+
+      <section>
+        <h2>Most recent activity</h2>
+        <ul className="list">
+          {recent.docs.map((bill) => (
+            <BillRow key={bill.id} bill={bill as Bill & { sponsor: Member | string }} />
+          ))}
+        </ul>
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <Link href="/bills">See all bills →</Link>
+        </div>
+      </section>
+    </>
   )
 }

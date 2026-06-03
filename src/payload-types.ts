@@ -69,6 +69,8 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    members: Member;
+    bills: Bill;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +80,8 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    members: MembersSelect<false> | MembersSelect<true>;
+    bills: BillsSelect<false> | BillsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -163,6 +167,78 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "members".
+ */
+export interface Member {
+  id: string;
+  bioguideId: string;
+  slug: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName: string;
+  honorificName?: string | null;
+  party?: ('Democrat' | 'Republican' | 'Independent') | null;
+  state?: string | null;
+  stateName?: string | null;
+  district?: number | null;
+  chamber?: ('House' | 'Senate') | null;
+  currentMember?: boolean | null;
+  birthYear?: number | null;
+  imageUrl?: string | null;
+  imageAttribution?: string | null;
+  officialWebsiteUrl?: string | null;
+  congressGovUrl?: string | null;
+  terms?:
+    | {
+        congress?: number | null;
+        chamber?: ('House' | 'Senate') | null;
+        startYear?: number | null;
+        endYear?: number | null;
+        party?: string | null;
+        state?: string | null;
+        district?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updateDate?: string | null;
+  lastSyncedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills".
+ */
+export interface Bill {
+  id: string;
+  slug: string;
+  congress: number;
+  billType: 'hr' | 'hjres' | 'hconres' | 'hres' | 's' | 'sjres' | 'sconres' | 'sres';
+  billNumber: number;
+  title: string;
+  shortTitle?: string | null;
+  introducedDate?: string | null;
+  policyArea?: string | null;
+  subjects?:
+    | {
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  originChamber?: ('House' | 'Senate') | null;
+  latestActionDate?: string | null;
+  latestActionText?: string | null;
+  sponsor: string | Member;
+  cosponsorsCount?: number | null;
+  actionsCount?: number | null;
+  congressGovUrl?: string | null;
+  updateDate?: string | null;
+  lastSyncedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -192,6 +268,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'members';
+        value: string | Member;
+      } | null)
+    | ({
+        relationTo: 'bills';
+        value: string | Bill;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -274,6 +358,76 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "members_select".
+ */
+export interface MembersSelect<T extends boolean = true> {
+  bioguideId?: T;
+  slug?: T;
+  firstName?: T;
+  lastName?: T;
+  fullName?: T;
+  honorificName?: T;
+  party?: T;
+  state?: T;
+  stateName?: T;
+  district?: T;
+  chamber?: T;
+  currentMember?: T;
+  birthYear?: T;
+  imageUrl?: T;
+  imageAttribution?: T;
+  officialWebsiteUrl?: T;
+  congressGovUrl?: T;
+  terms?:
+    | T
+    | {
+        congress?: T;
+        chamber?: T;
+        startYear?: T;
+        endYear?: T;
+        party?: T;
+        state?: T;
+        district?: T;
+        id?: T;
+      };
+  updateDate?: T;
+  lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills_select".
+ */
+export interface BillsSelect<T extends boolean = true> {
+  slug?: T;
+  congress?: T;
+  billType?: T;
+  billNumber?: T;
+  title?: T;
+  shortTitle?: T;
+  introducedDate?: T;
+  policyArea?: T;
+  subjects?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  originChamber?: T;
+  latestActionDate?: T;
+  latestActionText?: T;
+  sponsor?: T;
+  cosponsorsCount?: T;
+  actionsCount?: T;
+  congressGovUrl?: T;
+  updateDate?: T;
+  lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
