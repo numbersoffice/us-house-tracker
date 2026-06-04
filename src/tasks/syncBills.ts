@@ -45,10 +45,23 @@ type BillDetailResponse = {
     sponsors?: BillSponsor[]
     cosponsors?: { count?: number }
     actions?: { count?: number }
+    summaries?: { count?: number; url?: string }
     latestAction?: { actionDate?: string; text?: string }
     legislationUrl?: string
     updateDate?: string
   }
+}
+
+type BillSummary = {
+  actionDate?: string
+  actionDesc?: string
+  text?: string
+  updateDate?: string
+  versionCode?: string
+}
+
+type BillSummariesResponse = {
+  summaries?: BillSummary[]
 }
 
 type ChamberValue = 'House' | 'Senate'
@@ -104,6 +117,36 @@ async function ensureSponsor(
   return id
 }
 
+async function fetchSummaries(
+  billType: BillType,
+  billNumber: number,
+  logger: Logger,
+): Promise<BillSummary[]> {
+  try {
+    const res = await congressGet<BillSummariesResponse>(
+      `/bill/${CONGRESS}/${billType}/${billNumber}/summaries`,
+    )
+    return res.summaries ?? []
+  } catch (e) {
+    logger.warn(
+      `failed to fetch summaries for ${CONGRESS}-${billType}-${billNumber}: ${e instanceof Error ? e.message : String(e)}`,
+    )
+    return []
+  }
+}
+
+function mapSummaries(summaries: BillSummary[]) {
+  return [...summaries]
+    .sort((a, b) => (b.actionDate ?? '').localeCompare(a.actionDate ?? ''))
+    .map((s) => ({
+      actionDate: s.actionDate ?? null,
+      actionDesc: s.actionDesc ?? null,
+      versionCode: s.versionCode ?? null,
+      text: s.text ?? null,
+      updateDate: s.updateDate ?? null,
+    }))
+}
+
 async function syncBill(
   payload: PayloadInstance,
   billType: BillType,
@@ -131,6 +174,9 @@ async function syncBill(
   )
   const b = detail.bill
 
+  const summaries =
+    (b.summaries?.count ?? 0) > 0 ? await fetchSummaries(billType, billNumber, logger) : []
+
   const sponsorBioguide = b.sponsors?.[0]?.bioguideId
   if (!sponsorBioguide) {
     logger.warn(`${slug} has no sponsor; skipping`)
@@ -157,6 +203,7 @@ async function syncBill(
     sponsor: sponsorId,
     cosponsorsCount: b.cosponsors?.count ?? 0,
     actionsCount: b.actions?.count ?? 0,
+    summaries: mapSummaries(summaries),
     congressGovUrl:
       b.legislationUrl ??
       `https://www.congress.gov/bill/${CONGRESS}th-congress/${billType === 'hr' ? 'house-bill' : 'house-joint-resolution'}/${billNumber}`,

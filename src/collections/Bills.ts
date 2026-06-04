@@ -82,6 +82,20 @@ export const Bills: CollectionConfig = {
     { name: 'latestActionDate', type: 'date', index: true },
     { name: 'latestActionText', type: 'text' },
     {
+      name: 'summaries',
+      type: 'array',
+      admin: {
+        description: 'CRS bill summaries from Congress.gov, ordered newest first.',
+      },
+      fields: [
+        { name: 'actionDate', type: 'date' },
+        { name: 'actionDesc', type: 'text' },
+        { name: 'versionCode', type: 'text' },
+        { name: 'text', type: 'textarea' },
+        { name: 'updateDate', type: 'date' },
+      ],
+    },
+    {
       name: 'sponsor',
       type: 'relationship',
       relationTo: 'members',

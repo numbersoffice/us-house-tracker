@@ -242,6 +242,19 @@ export interface Bill {
   originChamber?: ('House' | 'Senate') | null;
   latestActionDate?: string | null;
   latestActionText?: string | null;
+  /**
+   * CRS bill summaries from Congress.gov, ordered newest first.
+   */
+  summaries?:
+    | {
+        actionDate?: string | null;
+        actionDesc?: string | null;
+        versionCode?: string | null;
+        text?: string | null;
+        updateDate?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   sponsor: string | Member;
   cosponsorsCount?: number | null;
   actionsCount?: number | null;
@@ -535,6 +548,16 @@ export interface BillsSelect<T extends boolean = true> {
   originChamber?: T;
   latestActionDate?: T;
   latestActionText?: T;
+  summaries?:
+    | T
+    | {
+        actionDate?: T;
+        actionDesc?: T;
+        versionCode?: T;
+        text?: T;
+        updateDate?: T;
+        id?: T;
+      };
   sponsor?: T;
   cosponsorsCount?: T;
   actionsCount?: T;
