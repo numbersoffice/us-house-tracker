@@ -1,0 +1,18 @@
+.photo {
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+.sm {
+  width: 56px;
+  height: 70px;
+}
+.md {
+  width: 80px;
+  height: 100px;
+}
+.lg {
+  width: 140px;
+  height: 175px;
+}

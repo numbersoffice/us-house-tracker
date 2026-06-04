@@ -1,8 +1,7 @@
-import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Member } from '@/payload-types'
-import { formatDistrict } from '@/lib/format'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { MemberCard } from '@/components/MemberCard'
 import { StateFilter } from '@/components/StateFilter'
 
 export default async function MembersPage({
@@ -24,13 +23,14 @@ export default async function MembersPage({
   const result = await payload.find({
     collection: 'members',
     where,
-    sort: ['state', 'district', 'lastName'],
+    sort: ['lastName'],
     limit: 600,
     depth: 0,
   })
 
   return (
     <>
+      <Breadcrumbs items={[{ label: 'Representatives' }]} />
       <h1>Representatives</h1>
       <p className="muted">
         The {result.totalDocs.toLocaleString()} members of the U.S. House of Representatives in the
@@ -51,22 +51,5 @@ export default async function MembersPage({
         ))}
       </ul>
     </>
-  )
-}
-
-function MemberCard({ member }: { member: Member }) {
-  const partyClass = member.party ? member.party.toLowerCase() : 'independent'
-  return (
-    <Link href={`/members/${member.slug}`} className="member-card">
-      {member.imageUrl ? (
-        <img src={member.imageUrl} alt="" className="member-photo" />
-      ) : (
-        <div className="member-photo" />
-      )}
-      <div className="member-name">
-        <span className={`party-dot ${partyClass}`} aria-hidden /> {member.fullName}
-      </div>
-      <div className="member-place">{formatDistrict(member)}</div>
-    </Link>
   )
 }

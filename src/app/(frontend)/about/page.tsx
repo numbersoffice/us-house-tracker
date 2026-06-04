@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const metadata = {
   title: 'About — U.S. House Tracker',
@@ -8,6 +9,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <article>
+      <Breadcrumbs items={[{ label: 'About' }]} />
       <h1>About House Tracker</h1>
       <p className="muted">A plain-language window into the U.S. House of Representatives.</p>
 
@@ -21,6 +23,20 @@ export default function AboutPage() {
         Every bill page shows who introduced it, the most recent action taken on it, and a readable
         summary of its current status. Every member page lists the bills they have sponsored, most
         recent first.
+      </p>
+
+      <h2>
+        Why not go to{' '}
+        <a href="https://congress.gov/" target="_blank" rel="noopener noreferrer">
+          congress.gov
+        </a>{' '}
+        directly?
+      </h2>
+      <p>
+        The official site of congress is a great source of valuable data. It's what this site is
+        based on. But while the official site contains all important data, it can be a bit
+        overwhelming. This site is built for the sole purpose of making it as easy as possible to
+        follow the work of your own representative.
       </p>
 
       <h2>Why this matters</h2>
@@ -62,9 +78,9 @@ export default function AboutPage() {
         <a href="https://github.com/numbersoffice/" target="_blank" rel="noopener noreferrer">
           Numbers Office
         </a>
-        , a small group that builds open-source software focused on community, privacy,
-        and positive impact. This project is open source — you can read the code, file
-        issues, or contribute on GitHub.
+        , a small group that builds open-source software focused on community, privacy, and positive
+        impact. This project is open source — you can read the code, file issues, or contribute on
+        GitHub.
       </p>
 
       <h2>A note on neutrality</h2>

@@ -1,0 +1,40 @@
+.listItem {
+  padding: 1.25rem;
+  margin-bottom: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-0);
+}
+.listItem > :global(.chip) {
+  margin-top: 0.5rem;
+}
+.headline {
+  width: 100%;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.headline:hover {
+  color: var(--color-accent);
+}
+.billHeadline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+.billHeadline h3 {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 100px);
+}
+.billMeta {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.billMeta strong {
+  color: var(--color-text);
+  font-weight: normal;
+}

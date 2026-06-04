@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { Flag } from '@/components/Flag'
 import './styles.css'
 
 export const metadata = {
@@ -16,15 +17,13 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body>
         <header className="site-header">
           <div className="site-header-inner">
-            <div>
-              <Link href="/" className="site-title">
-                House Tracker
-              </Link>
-              {/* <div className="site-tagline">What your representatives are working on</div> */}
-            </div>
+            <Link href="/" className="site-title">
+              <Flag />
+              U.S. House Tracker
+            </Link>
             <nav className="site-nav">
-              <Link href="/bills">Bills</Link>
-              <Link href="/members">Representatives</Link>
+              {/* <Link href="/bills">Bills</Link>
+              <Link href="/members">Representatives</Link> */}
               <Link href="/about">About</Link>
             </nav>
           </div>

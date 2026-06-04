@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Bill, Member } from '@/payload-types'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { MemberPhoto } from '@/components/MemberPhoto'
+import { PartyName } from '@/components/PartyName'
 import {
   formatBillHeadline,
   formatBillId,
@@ -27,7 +30,6 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
   if (!bill) notFound()
 
   const sponsor = typeof bill.sponsor === 'object' ? bill.sponsor : null
-  const partyClass = sponsor?.party ? sponsor.party.toLowerCase() : 'independent'
   const headline = formatBillHeadline(bill.billType, bill.billNumber)
   const billId = formatBillId(bill.billType, bill.billNumber)
   const humanized = humanizeActionPrefix(bill.latestActionText)
@@ -37,40 +39,40 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <article>
+      <Breadcrumbs items={[{ label: 'Bills', href: '/bills' }, { label: billId }]} />
       <div className="bill-detail-header">
         <div className="bill-id">
           {billId} · 119th Congress · {bill.originChamber ?? 'House'}-originated
         </div>
         <h1>{bill.title}</h1>
         <div className="meta small">
-          {headline}
-          {introducedDate && <> · Introduced {introducedDate}</>}
+          {/* {headline}
+          {introducedDate && <> · Introduced {introducedDate}</>} */}
+          <>Introduced {introducedDate}</>
         </div>
         {category && (
-          <div style={{ marginTop: '0.5rem' }}>
-            <Link href={`/bills?category=${category.slug}`} className="category-tag">
-              {category.label}
-            </Link>
-          </div>
+          <Link href={`/bills?category=${category.slug}`} className="chip chip-sm">
+            {category.label}
+          </Link>
         )}
       </div>
 
       {sponsor && (
-        <Link href={`/members/${sponsor.slug}`} className="sponsor-card">
-          {sponsor.imageUrl && (
-            <img src={sponsor.imageUrl} alt="" className="sponsor-photo" />
-          )}
+        <Link href={`/members/${sponsor.slug}`} className="card sponsor-card">
+          <MemberPhoto src={sponsor.imageUrl} size="sm" />
           <div>
             <div className="label">Sponsored by</div>
             <div className="name">
-              <span className={`party-dot ${partyClass}`} aria-hidden /> {sponsor.fullName}
+              <PartyName party={sponsor.party} name={sponsor.fullName} />
             </div>
-            <div className="meta">{formatDistrict(sponsor)} · {sponsor.party}</div>
+            <div className="meta">
+              {formatDistrict(sponsor)} · {sponsor.party}
+            </div>
           </div>
         </Link>
       )}
 
-      <div className="status-block">
+      <div className="card status-block">
         <div className="label">What&apos;s happening</div>
         {humanized && <div className="summary">{humanized}</div>}
         <div className="raw">

@@ -19,8 +19,8 @@ export default async function HomePage() {
       <section className="hero" aria-label="The west front of the United States Capitol">
         <h1>See your representatives at work.</h1>
         <p>
-          Democracy works best when transparent and trusted. Have a look at what your
-          representatives are doing.
+          For democracy to flourish, we need to be confident that our representatives are acting in
+          our best interest. This site helps to see what they are doing.
         </p>
         <div className="hero-actions">
           <Link href="/members" className="btn btn-primary">
@@ -30,6 +30,17 @@ export default async function HomePage() {
             Explore all bills
           </Link>
         </div>
+        <p className="hero-credit">
+          Photo:{' '}
+          <a
+            href="https://commons.wikimedia.org/wiki/File:US_Capitol_west_side.JPG"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Martin Falbisoner
+          </a>
+          , CC BY-SA 3.0
+        </p>
       </section>
 
       <section>

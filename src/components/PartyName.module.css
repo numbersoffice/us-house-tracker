@@ -1,0 +1,17 @@
+.partyDot {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  vertical-align: 0.05em;
+  margin-right: 0.35em;
+}
+.democrat {
+  background: var(--color-democrat);
+}
+.republican {
+  background: var(--color-republican);
+}
+.independent {
+  background: var(--color-independent);
+}

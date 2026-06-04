@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { STATE_NAMES } from '@/lib/format'
+import styles from './StateFilter.module.css'
 
 type Props = {
   value: string
@@ -13,7 +14,7 @@ export function StateFilter({ value }: Props) {
   const [isPending, startTransition] = useTransition()
 
   return (
-    <div className="filter">
+    <div className={styles.filter}>
       <label htmlFor="state-filter">State:</label>
       <select
         id="state-filter"
