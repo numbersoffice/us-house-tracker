@@ -36,6 +36,8 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
   const actionDate = formatDate(bill.latestActionDate)
   const introducedDate = formatDate(bill.introducedDate)
   const category = categoryForPolicyArea(bill.policyArea)
+  const summary = bill.summaries?.find((s) => s.text)
+  const summaryDate = formatDate(summary?.actionDate)
 
   return (
     <article>
@@ -71,6 +73,22 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
           </div>
         </Link>
       )}
+
+      <section className={`card bill-summary${summary?.text ? '' : ' is-empty'}`}>
+        <div className="label">
+          Summary
+          {summary?.text && summary.actionDesc && <> · {summary.actionDesc}</>}
+          {summary?.text && summaryDate && <> · {summaryDate}</>}
+        </div>
+        {summary?.text ? (
+          <div className="bill-summary-body" dangerouslySetInnerHTML={{ __html: summary.text }} />
+        ) : (
+          <div className="bill-summary-empty">
+            No summary yet. The Congressional Research Service usually publishes one a little while
+            after a bill is introduced — check back soon.
+          </div>
+        )}
+      </section>
 
       <div className="card status-block">
         <div className="label">What&apos;s happening</div>

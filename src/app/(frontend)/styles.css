@@ -535,6 +535,41 @@ main {
   font-size: 0.95rem;
 }
 
+.bill-summary,
+.bill-summary:hover {
+  padding: 1.25rem;
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+.bill-summary .label {
+  margin-bottom: 0.5rem;
+}
+.bill-summary-body {
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.bill-summary-body p {
+  margin: 0 0 0.75rem;
+}
+.bill-summary-body p:last-child {
+  margin-bottom: 0;
+}
+.bill-summary.is-empty {
+  background: transparent;
+  border-style: dashed;
+  box-shadow: none;
+  opacity: 0.75;
+}
+.bill-summary.is-empty .label {
+  color: var(--color-text-muted);
+}
+.bill-summary-empty {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
 /* 404 / not found */
 .not-found {
   text-align: center;
