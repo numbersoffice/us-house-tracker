@@ -146,6 +146,31 @@ export function humanizeActionPrefix(text?: string | null): string | null {
   return null
 }
 
+function ordinal(n: number): string {
+  const mod100 = n % 100
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`
+  switch (n % 10) {
+    case 1:
+      return `${n}st`
+    case 2:
+      return `${n}nd`
+    case 3:
+      return `${n}rd`
+    default:
+      return `${n}th`
+  }
+}
+
+type MemberLikeTenure = {
+  terms?: Array<unknown> | null
+}
+
+export function formatTermCount(member: MemberLikeTenure): string | null {
+  const terms = member.terms
+  if (!terms || terms.length === 0) return null
+  return `${ordinal(terms.length)} term`
+}
+
 export function formatDate(value?: string | null): string {
   if (!value) return ''
   const d = new Date(value)

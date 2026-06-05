@@ -7,7 +7,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { MemberPhoto } from '@/components/MemberPhoto'
 import { Pagination } from '@/components/Pagination'
 import { PartyName } from '@/components/PartyName'
-import { formatDistrict } from '@/lib/format'
+import { formatDistrict, formatTermCount } from '@/lib/format'
 
 const PAGE_SIZE = 25
 
@@ -33,6 +33,8 @@ export default async function MemberProfilePage({
   const member = memberResult.docs[0]
   if (!member) notFound()
 
+  const termCount = formatTermCount(member)
+
   const billsResult = await payload.find({
     collection: 'bills',
     where: { sponsor: { equals: member.id } },
@@ -53,6 +55,7 @@ export default async function MemberProfilePage({
           <h1>{member.fullName}</h1>
           <div className="subline">
             <PartyName party={member.party} name={member.party ?? ''} /> · {formatDistrict(member)}
+            {termCount && ` · ${termCount}`}
           </div>
           {member.officialWebsiteUrl && (
             <div className="official-link">
