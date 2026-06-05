@@ -9,31 +9,59 @@ type Usage = {
   oldestInWindow: string | null
 }
 
+type RunningJob = {
+  id: string
+  taskSlug: string | null
+  queue: string | null
+  createdAt: string | null
+  totalTried: number
+}
+
 function barColor(pct: number): string {
   if (pct >= 90) return 'var(--theme-error-500)'
   if (pct >= 75) return 'var(--theme-warning-500)'
   return 'var(--theme-success-500)'
 }
 
+function formatRelative(iso: string | null): string {
+  if (!iso) return ''
+  const startedAt = Date.parse(iso)
+  if (!Number.isFinite(startedAt)) return ''
+  const secs = Math.max(0, Math.round((Date.now() - startedAt) / 1000))
+  if (secs < 60) return `${secs}s ago`
+  const mins = Math.floor(secs / 60)
+  if (mins < 60) return `${mins}m ${secs % 60}s ago`
+  const hours = Math.floor(mins / 60)
+  return `${hours}h ${mins % 60}m ago`
+}
+
 export const CongressApiUsage: React.FC = () => {
   const { config } = useConfig()
   const [usage, setUsage] = useState<Usage | null>(null)
+  const [jobs, setJobs] = useState<RunningJob[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set())
   const cancelledRef = useRef(false)
 
-  const fetchUsage = useCallback(async () => {
+  const refreshAll = useCallback(async () => {
     setRefreshing(true)
     try {
-      const res = await fetch(`${config.routes.api}/globals/sync-state/congress-usage`, {
-        credentials: 'include',
-      })
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
-      }
-      const data: Usage = await res.json()
+      const [usageRes, jobsRes] = await Promise.all([
+        fetch(`${config.routes.api}/globals/sync-state/congress-usage`, {
+          credentials: 'include',
+        }),
+        fetch(`${config.routes.api}/globals/sync-state/running-jobs`, {
+          credentials: 'include',
+        }),
+      ])
+      if (!usageRes.ok) throw new Error(`usage: HTTP ${usageRes.status}`)
+      if (!jobsRes.ok) throw new Error(`jobs: HTTP ${jobsRes.status}`)
+      const usageData: Usage = await usageRes.json()
+      const jobsData: { jobs: RunningJob[] } = await jobsRes.json()
       if (!cancelledRef.current) {
-        setUsage(data)
+        setUsage(usageData)
+        setJobs(jobsData.jobs)
         setError(null)
       }
     } catch (e) {
@@ -49,13 +77,45 @@ export const CongressApiUsage: React.FC = () => {
 
   useEffect(() => {
     cancelledRef.current = false
-    void fetchUsage()
-    const id = setInterval(fetchUsage, 30_000)
+    void refreshAll()
+    const id = setInterval(refreshAll, 30_000)
     return () => {
       cancelledRef.current = true
       clearInterval(id)
     }
-  }, [fetchUsage])
+  }, [refreshAll])
+
+  const stopJob = useCallback(
+    async (id: string) => {
+      if (!window.confirm('Stop this job? In-flight Congress API calls will finish first.')) {
+        return
+      }
+      setStoppingIds((prev) => new Set(prev).add(id))
+      setJobs((prev) => (prev ? prev.filter((j) => j.id !== id) : prev))
+      try {
+        const res = await fetch(`${config.routes.api}/globals/sync-state/cancel-job`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        })
+        if (!res.ok) {
+          const text = await res.text().catch(() => '')
+          throw new Error(text || `HTTP ${res.status}`)
+        }
+      } catch (e) {
+        setError(`Failed to stop job ${id}: ${e instanceof Error ? e.message : String(e)}`)
+      } finally {
+        setStoppingIds((prev) => {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        })
+        void refreshAll()
+      }
+    },
+    [config.routes.api, refreshAll],
+  )
 
   const pct = usage ? Math.min((usage.used / usage.limit) * 100, 100) : 0
 
@@ -87,9 +147,9 @@ export const CongressApiUsage: React.FC = () => {
           )}
           <button
             type="button"
-            onClick={() => void fetchUsage()}
+            onClick={() => void refreshAll()}
             disabled={refreshing}
-            aria-label="Refresh usage"
+            aria-label="Refresh"
             title="Refresh"
             style={{
               background: 'transparent',
@@ -134,9 +194,86 @@ export const CongressApiUsage: React.FC = () => {
           }}
         />
       </div>
+
+      <div style={{ marginTop: '1rem' }}>
+        <div
+          style={{
+            fontSize: '0.8rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            color: 'var(--theme-elevation-500)',
+            marginBottom: '0.4rem',
+          }}
+        >
+          Running jobs
+        </div>
+        {jobs === null ? (
+          <small style={{ color: 'var(--theme-elevation-500)' }}>Loading…</small>
+        ) : jobs.length === 0 ? (
+          <small style={{ color: 'var(--theme-elevation-500)' }}>None currently running.</small>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {jobs.map((job) => {
+              const stopping = stoppingIds.has(job.id)
+              return (
+                <li
+                  key={job.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.4rem 0',
+                    borderTop: '1px solid var(--theme-elevation-100)',
+                  }}
+                >
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                      {job.taskSlug ?? '(unknown task)'}
+                      {job.totalTried > 1 && (
+                        <span
+                          style={{
+                            marginLeft: '0.5rem',
+                            fontSize: '0.75rem',
+                            color: 'var(--theme-warning-500)',
+                          }}
+                        >
+                          retry #{job.totalTried}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--theme-elevation-500)' }}>
+                      {job.queue ? `queue: ${job.queue}` : 'queue: default'}
+                      {job.createdAt && ` · started ${formatRelative(job.createdAt)}`}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void stopJob(job.id)}
+                    disabled={stopping}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--theme-error-500)',
+                      color: 'var(--theme-error-500)',
+                      borderRadius: '4px',
+                      padding: '0.2rem 0.6rem',
+                      fontSize: '0.8rem',
+                      cursor: stopping ? 'default' : 'pointer',
+                      opacity: stopping ? 0.5 : 1,
+                    }}
+                  >
+                    {stopping ? 'Stopping…' : 'Stop'}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
+
       {error && (
         <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--theme-error-500)' }}>
-          Could not load usage: {error}
+          {error}
         </small>
       )}
     </div>

@@ -101,6 +101,7 @@ export interface Config {
   };
   locale: null;
   widgets: {
+    'congress-api-usage': CongressApiUsageWidget;
     collections: CollectionsWidget;
   };
   user: User;
@@ -665,6 +666,16 @@ export interface PayloadJobsStatsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "congress-api-usage_widget".
+ */
+export interface CongressApiUsageWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -20,8 +20,17 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    components: {
-      beforeDashboard: ['/admin/CongressApiUsage#CongressApiUsage'],
+    dashboard: {
+      widgets: [
+        {
+          slug: 'congress-api-usage',
+          label: 'Congress API usage',
+          Component: '/admin/CongressApiUsageWidget#CongressApiUsageWidget',
+          minWidth: 'medium',
+          maxWidth: 'full',
+        },
+      ],
+      defaultLayout: [{ widgetSlug: 'congress-api-usage', width: 'full' }],
     },
   },
   collections: [Users, Members, Bills],

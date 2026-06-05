@@ -34,6 +34,62 @@ const congressUsageEndpoint: Endpoint = {
   },
 }
 
+const runningJobsEndpoint: Endpoint = {
+  path: '/running-jobs',
+  method: 'get',
+  handler: async (req) => {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const result = await req.payload.find({
+      collection: 'payload-jobs',
+      where: { processing: { equals: true } },
+      sort: '-createdAt',
+      depth: 0,
+      limit: 50,
+      overrideAccess: true,
+    })
+    const jobs = result.docs.map((job) => ({
+      id: String(job.id),
+      taskSlug: job.taskSlug ?? null,
+      queue: job.queue ?? null,
+      createdAt: job.createdAt ?? null,
+      totalTried: job.totalTried ?? 0,
+    }))
+    return Response.json({ jobs })
+  },
+}
+
+const cancelJobEndpoint: Endpoint = {
+  path: '/cancel-job',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    let body: unknown = null
+    try {
+      body = typeof req.json === 'function' ? await req.json() : null
+    } catch {
+      return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const id =
+      body && typeof body === 'object' && 'id' in body ? (body as { id: unknown }).id : null
+    if (typeof id !== 'string' || id.length === 0) {
+      return Response.json({ error: 'Missing or invalid `id`' }, { status: 400 })
+    }
+    try {
+      await req.payload.jobs.cancelByID({ id, req })
+      return Response.json({ ok: true })
+    } catch (e) {
+      return Response.json(
+        { error: e instanceof Error ? e.message : 'Failed to cancel job' },
+        { status: 400 },
+      )
+    }
+  },
+}
+
 export const SyncState: GlobalConfig = {
   slug: 'sync-state',
   admin: {
@@ -44,7 +100,7 @@ export const SyncState: GlobalConfig = {
     read: () => true,
     update: ({ req }) => Boolean(req.user),
   },
-  endpoints: [congressUsageEndpoint],
+  endpoints: [congressUsageEndpoint, runningJobsEndpoint, cancelJobEndpoint],
   fields: [
     {
       name: 'lastBillsSyncStartedAt',
@@ -58,6 +114,7 @@ export const SyncState: GlobalConfig = {
       name: 'congressApiBuckets',
       type: 'array',
       admin: {
+        initCollapsed: true,
         description:
           'Per-minute request counts against the Congress.gov API. The hourly limiter prunes entries older than 1 hour and rejects new requests once the rolling sum reaches the cap.',
         readOnly: true,

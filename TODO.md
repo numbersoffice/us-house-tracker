@@ -1,0 +1,2 @@
+- Fix sync button on individual bill documents
+- Fix full sync not updating old fields (e.g. now that I added summary)

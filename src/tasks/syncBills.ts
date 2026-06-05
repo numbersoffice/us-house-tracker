@@ -225,6 +225,22 @@ function toCongressDateTime(d: Date): string {
   return `${d.toISOString().slice(0, 19)}Z`
 }
 
+const CANCELLATION_CHECK_INTERVAL = 5
+
+async function isJobCancelled(payload: PayloadInstance, jobId: string): Promise<boolean> {
+  try {
+    const job = await payload.findByID({
+      collection: 'payload-jobs',
+      id: jobId,
+      depth: 0,
+      overrideAccess: true,
+    })
+    return Boolean(job.hasError)
+  } catch {
+    return false
+  }
+}
+
 async function readWatermark(payload: PayloadInstance): Promise<Date | null> {
   const state = await payload.findGlobal({ slug: 'sync-state', overrideAccess: true })
   if (!state.lastBillsSyncStartedAt) return null
@@ -240,7 +256,11 @@ async function writeWatermark(payload: PayloadInstance, startedAt: Date): Promis
   })
 }
 
-async function runBillsSync(payload: PayloadInstance, logger: Logger): Promise<Totals> {
+async function runBillsSync(
+  payload: PayloadInstance,
+  logger: Logger,
+  jobId?: string,
+): Promise<Totals> {
   const totals: Totals = { created: 0, updated: 0, skipped: 0, errored: 0 }
   const runStartedAt = new Date()
 
@@ -255,7 +275,10 @@ async function runBillsSync(payload: PayloadInstance, logger: Logger): Promise<T
     logger.info('No watermark found; running full sync')
   }
 
+  let cancelled = false
+
   for (const billType of BILL_TYPES) {
+    if (cancelled) break
     logger.info(`Syncing /bill/${CONGRESS}/${billType} …`)
     const perType: Totals = { created: 0, updated: 0, skipped: 0, errored: 0 }
     let i = 0
@@ -283,6 +306,16 @@ async function runBillsSync(payload: PayloadInstance, logger: Logger): Promise<T
           `error on ${billType} ${billNumber}: ${e instanceof Error ? e.message : String(e)}`,
         )
       }
+
+      if (
+        jobId &&
+        i % CANCELLATION_CHECK_INTERVAL === 0 &&
+        (await isJobCancelled(payload, jobId))
+      ) {
+        logger.warn(`Job ${jobId} cancelled by user; stopping after ${i} ${billType} bills`)
+        cancelled = true
+        break
+      }
     }
 
     logger.info(`${billType} done: ${JSON.stringify(perType)}`)
@@ -290,6 +323,13 @@ async function runBillsSync(payload: PayloadInstance, logger: Logger): Promise<T
     totals.updated += perType.updated
     totals.skipped += perType.skipped
     totals.errored += perType.errored
+  }
+
+  if (cancelled) {
+    logger.warn(
+      `Bills sync cancelled. Partial totals: ${JSON.stringify(totals)}. Watermark NOT advanced.`,
+    )
+    return totals
   }
 
   await writeWatermark(payload, runStartedAt)
@@ -309,8 +349,8 @@ export const syncBillsTask: TaskConfig<'syncBills'> = {
   ],
   retries: 2,
   schedule: [{ cron: '0 * * * *', queue: 'default' }],
-  handler: async ({ req }) => {
-    const totals = await runBillsSync(req.payload, req.payload.logger)
+  handler: async ({ req, job }) => {
+    const totals = await runBillsSync(req.payload, req.payload.logger, String(job.id))
     return { output: totals }
   },
 }
