@@ -8,6 +8,17 @@ const MIN_INTERVAL_MS = 350
 
 let lastRequestAt = 0
 
+// Serializes all Congress API slot acquisitions through a single promise chain
+// so concurrent jobs (e.g. bills + members syncs running together) can't race
+// each other's read-modify-write on `lastRequestAt` or `congressApiBuckets`.
+let queueTail: Promise<unknown> = Promise.resolve()
+
+function serializeSlot<T>(fn: () => Promise<T>): Promise<T> {
+  const next = queueTail.then(fn, fn)
+  queueTail = next.catch(() => {})
+  return next
+}
+
 async function throttle() {
   const since = Date.now() - lastRequestAt
   if (since < MIN_INTERVAL_MS) {
@@ -91,8 +102,10 @@ export async function congressGet<T>(
   const maxRetries = 3
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    await reserveCongressApiSlot()
-    await throttle()
+    await serializeSlot(async () => {
+      await reserveCongressApiSlot()
+      await throttle()
+    })
     const res = await fetch(url, {
       headers: { 'X-Api-Key': apiKey, Accept: 'application/json' },
     })

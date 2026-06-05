@@ -1,11 +1,32 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Endpoint } from 'payload'
+
+const syncNowEndpoint: Endpoint = {
+  path: '/sync-now',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const job = await req.payload.jobs.queue({
+      task: 'syncMembers',
+      input: {},
+      req,
+    })
+    void req.payload.jobs.run({ queue: 'default' })
+    return Response.json({ jobId: job.id })
+  },
+}
 
 export const Members: CollectionConfig = {
   slug: 'members',
   admin: {
     useAsTitle: 'fullName',
     defaultColumns: ['fullName', 'party', 'state', 'district', 'chamber', 'currentMember'],
+    components: {
+      beforeList: ['/admin/SyncMembersButton#SyncMembersButton'],
+    },
   },
+  endpoints: [syncNowEndpoint],
   access: {
     read: () => true,
   },

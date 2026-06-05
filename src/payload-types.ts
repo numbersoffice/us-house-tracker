@@ -108,6 +108,7 @@ export interface Config {
   jobs: {
     tasks: {
       syncBills: TaskSyncBills;
+      syncMembers: TaskSyncMembers;
       inline: {
         input: unknown;
         output: unknown;
@@ -313,7 +314,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'syncBills';
+        taskSlug: 'inline' | 'syncBills' | 'syncMembers';
         taskID: string;
         input?:
           | {
@@ -346,7 +347,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'syncBills') | null;
+  taskSlug?: ('inline' | 'syncBills' | 'syncMembers') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -610,6 +611,10 @@ export interface SyncState {
    */
   lastBillsSyncStartedAt?: string | null;
   /**
+   * Start time of the most recent successful members sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.
+   */
+  lastMembersSyncStartedAt?: string | null;
+  /**
    * Per-minute request counts against the Congress.gov API. The hourly limiter prunes entries older than 1 hour and rejects new requests once the rolling sum reaches the cap.
    */
   congressApiBuckets?:
@@ -646,6 +651,7 @@ export interface PayloadJobsStat {
  */
 export interface SyncStateSelect<T extends boolean = true> {
   lastBillsSyncStartedAt?: T;
+  lastMembersSyncStartedAt?: T;
   congressApiBuckets?:
     | T
     | {
@@ -692,6 +698,19 @@ export interface CollectionsWidget {
  * via the `definition` "TaskSyncBills".
  */
 export interface TaskSyncBills {
+  input?: unknown;
+  output: {
+    created: number;
+    updated: number;
+    skipped: number;
+    errored: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSyncMembers".
+ */
+export interface TaskSyncMembers {
   input?: unknown;
   output: {
     created: number;

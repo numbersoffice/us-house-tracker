@@ -10,6 +10,7 @@ import { Members } from './collections/Members'
 import { Bills } from './collections/Bills'
 import { SyncState } from './globals/SyncState'
 import { syncBillsTask } from './tasks/syncBills'
+import { syncMembersTask } from './tasks/syncMembers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -44,7 +45,7 @@ export default buildConfig({
     url: process.env.DATABASE_URL || '',
   }),
   jobs: {
-    tasks: [syncBillsTask],
+    tasks: [syncBillsTask, syncMembersTask],
     autoRun: [{ cron: '* * * * *', queue: 'default' }],
     shouldAutoRun: () => process.env.PAYLOAD_DISABLE_JOBS !== 'true',
     deleteJobOnComplete: true,

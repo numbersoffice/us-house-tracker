@@ -111,6 +111,14 @@ export const SyncState: GlobalConfig = {
       },
     },
     {
+      name: 'lastMembersSyncStartedAt',
+      type: 'date',
+      admin: {
+        description:
+          'Start time of the most recent successful members sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.',
+      },
+    },
+    {
       name: 'congressApiBuckets',
       type: 'array',
       admin: {
