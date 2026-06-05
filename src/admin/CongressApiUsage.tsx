@@ -37,6 +37,15 @@ function formatDateTime(iso: string | null): string {
   })
 }
 
+function formatTime(d: Date): string {
+  return d.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const HOUR_MS = 60 * 60 * 1000
+
 export const CongressApiUsage: React.FC = () => {
   const { config } = useConfig()
   const [usage, setUsage] = useState<Usage | null>(null)
@@ -120,6 +129,10 @@ export const CongressApiUsage: React.FC = () => {
   )
 
   const pct = usage ? Math.min((usage.used / usage.limit) * 100, 100) : 0
+  const pausedUntil =
+    usage && usage.used >= usage.limit && usage.oldestInWindow
+      ? new Date(Date.parse(usage.oldestInWindow) + HOUR_MS)
+      : null
 
   return (
     <div
@@ -226,17 +239,54 @@ export const CongressApiUsage: React.FC = () => {
                   }}
                 >
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexWrap: 'wrap',
+                      }}
+                    >
                       {job.taskSlug ?? '(unknown task)'}
                       {job.totalTried > 1 && (
                         <span
                           style={{
-                            marginLeft: '0.5rem',
                             fontSize: '0.75rem',
                             color: 'var(--theme-warning-500)',
                           }}
                         >
                           retry #{job.totalTried}
+                        </span>
+                      )}
+                      {pausedUntil && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            fontSize: '0.7rem',
+                            fontWeight: 500,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                            color: 'var(--theme-warning-500)',
+                            border: '1px solid var(--theme-warning-500)',
+                            borderRadius: '3px',
+                            padding: '0.05rem 0.4rem',
+                          }}
+                          title={`Hourly Congress API cap reached. Resumes at ${formatDateTime(pausedUntil.toISOString())}.`}
+                        >
+                          <span
+                            aria-hidden
+                            style={{
+                              width: '0.5rem',
+                              height: '0.5rem',
+                              borderRadius: '50%',
+                              background: 'var(--theme-warning-500)',
+                            }}
+                          />
+                          paused — resumes {formatTime(pausedUntil)}
                         </span>
                       )}
                     </div>
