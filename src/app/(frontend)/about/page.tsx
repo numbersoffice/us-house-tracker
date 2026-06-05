@@ -65,7 +65,7 @@ export default function AboutPage() {
           Congress.gov API
         </a>
         , maintained by the Library of Congress. Bill text, sponsor information, and action
-        histories are updated regularly from that source.
+        histories are updated once an hour from that source.
       </p>
       <p>
         Member photographs are provided by the Bioguide, the official biographical directory of the

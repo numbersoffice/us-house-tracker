@@ -30,7 +30,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         </header>
         <main>{children}</main>
         <footer className="site-footer">
-          Data from the U.S. Congress. Updated regularly via the official{' '}
+          Data from the U.S. Congress. Updated once an hour via the official{' '}
           <a href="https://api.congress.gov/" target="_blank" rel="noopener noreferrer">
             Congress.gov API
           </a>
