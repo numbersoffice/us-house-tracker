@@ -1,4 +1,38 @@
-import type { GlobalConfig } from 'payload'
+import type { Endpoint, GlobalConfig } from 'payload'
+
+export const CONGRESS_API_HOURLY_LIMIT = 5000
+export const CONGRESS_API_WINDOW_MS = 60 * 60 * 1000
+
+type Bucket = { startedAt?: string | null; count?: number | null }
+
+function countFreshRequests(buckets: Bucket[], now: number) {
+  const cutoff = now - CONGRESS_API_WINDOW_MS
+  const fresh = buckets.filter((b) => {
+    const t = b.startedAt ? Date.parse(b.startedAt) : NaN
+    return Number.isFinite(t) && t > cutoff
+  })
+  const used = fresh.reduce((sum, b) => sum + (b.count ?? 0), 0)
+  const oldestInWindow = fresh[0]?.startedAt ?? null
+  return { used, oldestInWindow }
+}
+
+const congressUsageEndpoint: Endpoint = {
+  path: '/congress-usage',
+  method: 'get',
+  handler: async (req) => {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const state = await req.payload.findGlobal({ slug: 'sync-state', overrideAccess: true })
+    const buckets = (state.congressApiBuckets ?? []) as Bucket[]
+    const { used, oldestInWindow } = countFreshRequests(buckets, Date.now())
+    return Response.json({
+      used,
+      limit: CONGRESS_API_HOURLY_LIMIT,
+      oldestInWindow,
+    })
+  },
+}
 
 export const SyncState: GlobalConfig = {
   slug: 'sync-state',
@@ -10,6 +44,7 @@ export const SyncState: GlobalConfig = {
     read: () => true,
     update: ({ req }) => Boolean(req.user),
   },
+  endpoints: [congressUsageEndpoint],
   fields: [
     {
       name: 'lastBillsSyncStartedAt',
@@ -18,6 +53,19 @@ export const SyncState: GlobalConfig = {
         description:
           'Start time of the most recent successful bills sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.',
       },
+    },
+    {
+      name: 'congressApiBuckets',
+      type: 'array',
+      admin: {
+        description:
+          'Per-minute request counts against the Congress.gov API. The hourly limiter prunes entries older than 1 hour and rejects new requests once the rolling sum reaches the cap.',
+        readOnly: true,
+      },
+      fields: [
+        { name: 'startedAt', type: 'date', required: true },
+        { name: 'count', type: 'number', required: true, defaultValue: 0 },
+      ],
     },
   ],
 }

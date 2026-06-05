@@ -608,6 +608,16 @@ export interface SyncState {
    * Start time of the most recent successful bills sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.
    */
   lastBillsSyncStartedAt?: string | null;
+  /**
+   * Per-minute request counts against the Congress.gov API. The hourly limiter prunes entries older than 1 hour and rejects new requests once the rolling sum reaches the cap.
+   */
+  congressApiBuckets?:
+    | {
+        startedAt: string;
+        count: number;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -635,6 +645,13 @@ export interface PayloadJobsStat {
  */
 export interface SyncStateSelect<T extends boolean = true> {
   lastBillsSyncStartedAt?: T;
+  congressApiBuckets?:
+    | T
+    | {
+        startedAt?: T;
+        count?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -20,6 +20,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      beforeDashboard: ['/admin/CongressApiUsage#CongressApiUsage'],
+    },
   },
   collections: [Users, Members, Bills],
   globals: [SyncState],
