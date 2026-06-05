@@ -23,16 +23,18 @@ function barColor(pct: number): string {
   return 'var(--theme-success-500)'
 }
 
-function formatRelative(iso: string | null): string {
+function formatDateTime(iso: string | null): string {
   if (!iso) return ''
-  const startedAt = Date.parse(iso)
-  if (!Number.isFinite(startedAt)) return ''
-  const secs = Math.max(0, Math.round((Date.now() - startedAt) / 1000))
-  if (secs < 60) return `${secs}s ago`
-  const mins = Math.floor(secs / 60)
-  if (mins < 60) return `${mins}m ${secs % 60}s ago`
-  const hours = Math.floor(mins / 60)
-  return `${hours}h ${mins % 60}m ago`
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 }
 
 export const CongressApiUsage: React.FC = () => {
@@ -195,23 +197,19 @@ export const CongressApiUsage: React.FC = () => {
         />
       </div>
 
-      <div style={{ marginTop: '1rem' }}>
-        <div
-          style={{
-            fontSize: '0.8rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            color: 'var(--theme-elevation-500)',
-            marginBottom: '0.4rem',
-          }}
-        >
-          Running jobs
-        </div>
-        {jobs === null ? (
-          <small style={{ color: 'var(--theme-elevation-500)' }}>Loading…</small>
-        ) : jobs.length === 0 ? (
-          <small style={{ color: 'var(--theme-elevation-500)' }}>None currently running.</small>
-        ) : (
+      {jobs && jobs.length > 0 && (
+        <div style={{ marginTop: '1rem' }}>
+          <div
+            style={{
+              fontSize: '0.8rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--theme-elevation-500)',
+              marginBottom: '0.4rem',
+            }}
+          >
+            Running jobs
+          </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {jobs.map((job) => {
               const stopping = stoppingIds.has(job.id)
@@ -243,8 +241,8 @@ export const CongressApiUsage: React.FC = () => {
                       )}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--theme-elevation-500)' }}>
-                      {job.queue ? `queue: ${job.queue}` : 'queue: default'}
-                      {job.createdAt && ` · started ${formatRelative(job.createdAt)}`}
+                      {/* {job.queue ? `queue: ${job.queue}` : 'queue: default'} */}
+                      {job.createdAt && `started ${formatDateTime(job.createdAt)}`}
                     </div>
                   </div>
                   <button
@@ -268,8 +266,8 @@ export const CongressApiUsage: React.FC = () => {
               )
             })}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
 
       {error && (
         <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--theme-error-500)' }}>

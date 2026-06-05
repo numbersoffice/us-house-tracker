@@ -23,7 +23,7 @@ export const Bills: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'billType', 'billNumber', 'congress', 'latestActionDate', 'sponsor'],
     components: {
-      Description: '/admin/SyncBillsButton#SyncBillsButton',
+      beforeList: ['/admin/SyncBillsButton#SyncBillsButton'],
     },
   },
   endpoints: [syncNowEndpoint],
