@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import type { Where } from 'payload'
 import config from '@payload-config'
 import { BillRow } from '@/components/BillRow'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -20,7 +21,7 @@ export default async function BillsPage({
 
   const payload = await getPayload({ config: await config })
 
-  const where: Record<string, unknown> = {}
+  const where: Where = {}
   if (activeCategory) {
     where.policyArea = { in: activeCategory.policyAreas }
   }
