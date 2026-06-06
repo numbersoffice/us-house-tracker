@@ -90,14 +90,14 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
         )}
       </section>
 
-      <div className="card status-block">
+      {/* <div className="card status-block">
         <div className="label">What&apos;s happening</div>
         {humanized && <div className="summary">{humanized}</div>}
         <div className="raw">
           {actionDate && <strong>{actionDate} — </strong>}
           {bill.latestActionText ?? 'No recorded activity yet.'}
         </div>
-      </div>
+      </div> */}
 
       {(bill.cosponsorsCount ?? 0) > 0 && (
         <p className="muted small">
