@@ -1,4 +1,4 @@
-import { getPayload } from 'payload'
+import { getPayload, type Where } from 'payload'
 import config from '@payload-config'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { MemberCard } from '@/components/MemberCard'
@@ -14,7 +14,7 @@ export default async function MembersPage({
 
   const payload = await getPayload({ config: await config })
 
-  const where: Record<string, unknown> = {
+  const where: Where = {
     chamber: { equals: 'House' },
     currentMember: { equals: true },
   }
