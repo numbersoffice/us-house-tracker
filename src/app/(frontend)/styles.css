@@ -478,6 +478,26 @@ main {
   }
 }
 
+/* Section heading with inline action (e.g. RSS link) */
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.section-heading h2 {
+  margin-bottom: 0;
+}
+.rss-link {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.rss-link::before {
+  content: '🔖 ';
+}
+
 /* Bill detail */
 .bill-detail-header {
   padding-bottom: var(--space-4);
