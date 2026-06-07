@@ -35,11 +35,22 @@ async function revalidateSponsoredBills(req: PayloadRequest, memberId: Member['i
   }
 }
 
-export const revalidateMember: CollectionAfterChangeHook<Member> = async ({ doc, req }) => {
+export const revalidateMember: CollectionAfterChangeHook<Member> = async ({
+  doc,
+  previousDoc,
+  req,
+}) => {
   if (revalidationDisabled(req)) return doc
 
-  // Individual member page + its paginated sponsored-bills sub-routes.
+  // Individual member page + its paginated sponsored-bills sub-routes. A member
+  // is identified globally by slug, so revalidate the old slug too if it changed.
   safeRevalidatePath(req, `/members/${doc.slug}`, 'layout')
+  if (previousDoc?.slug && previousDoc.slug !== doc.slug) {
+    safeRevalidatePath(req, `/members/${previousDoc.slug}`, 'layout')
+  }
+
+  // The state list is revalidated globally (all state variants), so a member
+  // moving between states refreshes both the old and new state pages.
   revalidateMemberLists(req)
   await revalidateSponsoredBills(req, doc.id)
 

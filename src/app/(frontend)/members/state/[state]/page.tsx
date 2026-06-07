@@ -1,24 +1,13 @@
 import { notFound } from 'next/navigation'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { MembersListing } from '@/components/MembersListing'
 import { STATE_NAMES } from '@/lib/format'
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: await config })
-  const result = await payload.find({
-    collection: 'members',
-    where: { chamber: { equals: 'House' }, currentMember: { equals: true } },
-    limit: 600,
-    depth: 0,
-    select: { state: true },
-  })
-
-  const states = new Set<string>()
-  for (const m of result.docs) {
-    if (m.state) states.add(m.state.toUpperCase())
-  }
-  return [...states].map((state) => ({ state }))
+// Enumerate state paths from the canonical state list rather than by grouping
+// current members. A member's state can change, so deriving the param set from
+// member groupings would make it stale; the global list keeps every state path
+// stable and prerenderable regardless of who currently sits where.
+export function generateStaticParams() {
+  return Object.keys(STATE_NAMES).map((state) => ({ state }))
 }
 
 export default async function MembersByStatePage({
