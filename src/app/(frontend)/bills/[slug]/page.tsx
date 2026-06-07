@@ -15,6 +15,18 @@ import {
 } from '@/lib/format'
 import { categoryForPolicyArea } from '@/lib/categories'
 
+export async function generateStaticParams() {
+  const payload = await getPayload({ config: await config })
+  const result = await payload.find({
+    collection: 'bills',
+    limit: 0,
+    pagination: false,
+    depth: 0,
+    select: { slug: true },
+  })
+  return result.docs.map((bill) => ({ slug: bill.slug }))
+}
+
 export default async function BillDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const payload = await getPayload({ config: await config })
@@ -53,7 +65,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
           <>Introduced {introducedDate}</>
         </div>
         {category && (
-          <Link href={`/bills?category=${category.slug}`} className="chip chip-sm">
+          <Link href={`/bills/category/${category.slug}`} className="chip chip-sm">
             {category.label}
           </Link>
         )}

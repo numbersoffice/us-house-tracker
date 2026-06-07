@@ -1,4 +1,5 @@
 import type { CollectionConfig, Endpoint } from 'payload'
+import { revalidateBill, revalidateBillDelete } from '../hooks/revalidateBill'
 
 const syncNowEndpoint: Endpoint = {
   path: '/sync-now',
@@ -29,6 +30,10 @@ export const Bills: CollectionConfig = {
   endpoints: [syncNowEndpoint],
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateBill],
+    afterDelete: [revalidateBillDelete],
   },
   indexes: [
     {
