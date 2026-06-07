@@ -7,7 +7,10 @@ const MAX_ITEMS = 100
 
 // The underlying data only changes hourly (via the sync job), so we cache the
 // feed and rebuild it on a timer rather than tracking individual bill changes.
-const REVALIDATE_SECONDS = 600 // 10 minutes
+const REVALIDATE_SECONDS = 900 // 15 minutes
+
+// Keep the route segment's cache lifetime in step with the cached feed data.
+export const revalidate = 900 // 15 minutes
 
 type FeedData = { member: FeedMember; bills: FeedBill[] }
 

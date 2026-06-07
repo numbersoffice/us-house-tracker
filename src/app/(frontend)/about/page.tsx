@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
+export const revalidate = 900 // 15 minutes
+
 export const metadata = {
   title: 'About — U.S. House Tracker',
   description: 'About this site: how it works, where the data comes from, and how to use it.',

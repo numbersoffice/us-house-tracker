@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { BillsListing } from '@/components/BillsListing'
 import { CATEGORIES, categoryBySlug } from '@/lib/categories'
 
+export const revalidate = 900 // 15 minutes
+
 export function generateStaticParams() {
   return CATEGORIES.map((cat) => ({ category: cat.slug }))
 }

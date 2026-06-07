@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { MembersListing } from '@/components/MembersListing'
 import { STATE_NAMES } from '@/lib/format'
 
+export const revalidate = 900 // 15 minutes
+
 // Enumerate state paths from the canonical state list rather than by grouping
 // current members. A member's state can change, so deriving the param set from
 // member groupings would make it stale; the global list keeps every state path
