@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     members: Member;
     bills: Bill;
+    'sync-locks': SyncLock;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -81,6 +82,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     bills: BillsSelect<false> | BillsSelect<true>;
+    'sync-locks': SyncLocksSelect<false> | SyncLocksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -247,6 +249,18 @@ export interface Bill {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sync-locks".
+ */
+export interface SyncLock {
+  id: string;
+  task: string;
+  lockedAt: string;
+  jobId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -381,6 +395,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bills';
         value: string | Bill;
+      } | null)
+    | ({
+        relationTo: 'sync-locks';
+        value: string | SyncLock;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -523,6 +541,17 @@ export interface BillsSelect<T extends boolean = true> {
   congressGovUrl?: T;
   updateDate?: T;
   lastSyncedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sync-locks_select".
+ */
+export interface SyncLocksSelect<T extends boolean = true> {
+  task?: T;
+  lockedAt?: T;
+  jobId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,6 +1,7 @@
 import type { getPayload, TaskConfig } from 'payload'
 
 import { paginate } from '../lib/congress-api'
+import { acquireSyncLock, releaseSyncLock } from '../lib/sync-lock'
 import {
   isHouseMember,
   syncMember,
@@ -63,6 +64,27 @@ async function runMembersSync(
   jobId?: string,
 ): Promise<Totals> {
   const totals: Totals = { created: 0, updated: 0, skipped: 0, errored: 0 }
+
+  // Mutual exclusion: never run two members syncs at once (scheduled, autoRun, or
+  // manual). A bills sync can still run alongside us — it holds a different lock.
+  if (!(await acquireSyncLock(payload, 'syncMembers', jobId))) {
+    logger.warn('Another members sync is already in progress; skipping this run.')
+    return totals
+  }
+
+  try {
+    return await runMembersSyncLocked(payload, logger, jobId, totals)
+  } finally {
+    await releaseSyncLock(payload, 'syncMembers')
+  }
+}
+
+async function runMembersSyncLocked(
+  payload: PayloadInstance,
+  logger: Logger,
+  jobId: string | undefined,
+  totals: Totals,
+): Promise<Totals> {
   const runStartedAt = new Date()
   let i = 0
   let skippedNonHouse = 0
