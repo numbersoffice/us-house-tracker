@@ -3,6 +3,7 @@ import type { getPayload, TaskConfig } from 'payload'
 import { congressGet, paginate } from '../lib/congress-api'
 import { syncMember } from '../lib/sync-members-core'
 import { acquireSyncLock, releaseSyncLock } from '../lib/sync-lock'
+import { revalidateFrontend, type RevalidatePath } from '../lib/revalidate'
 
 const CONGRESS = 119
 const BILL_TYPES = ['hr', 'hjres'] as const
@@ -222,6 +223,14 @@ async function syncBill(
 
 const OVERLAP_BUFFER_MS = 60 * 60 * 1000
 
+// Cached pages that show bill data and need refreshing after a bills sync: the
+// home page (recent bills), the bills list, and every bill detail page.
+const BILLS_REVALIDATE_PATHS: RevalidatePath[] = [
+  '/',
+  '/bills',
+  { path: '/bills/[slug]', type: 'page' },
+]
+
 function toCongressDateTime(d: Date): string {
   return `${d.toISOString().slice(0, 19)}Z`
 }
@@ -370,6 +379,7 @@ async function runBillsSyncLocked(
     logger.warn(
       `Bills sync cancelled. Partial totals: ${JSON.stringify(totals)}. Watermark NOT advanced.`,
     )
+    if (totals.created + totals.updated > 0) await revalidateFrontend(logger, BILLS_REVALIDATE_PATHS)
     return totals
   }
 
@@ -379,6 +389,7 @@ async function runBillsSyncLocked(
   logger.info(
     `Bills sync complete in ${durationSec}s (started ${runStartedAt.toISOString()}, ended ${runCompletedAt.toISOString()}). Totals: ${JSON.stringify(totals)}.`,
   )
+  if (totals.created + totals.updated > 0) await revalidateFrontend(logger, BILLS_REVALIDATE_PATHS)
   return totals
 }
 

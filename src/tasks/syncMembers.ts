@@ -2,6 +2,7 @@ import type { getPayload, TaskConfig } from 'payload'
 
 import { paginate } from '../lib/congress-api'
 import { acquireSyncLock, releaseSyncLock } from '../lib/sync-lock'
+import { revalidateFrontend, type RevalidatePath } from '../lib/revalidate'
 import {
   isHouseMember,
   syncMember,
@@ -11,6 +12,15 @@ import {
 
 const CONGRESS = 119
 const OVERLAP_BUFFER_MS = 60 * 60 * 1000
+
+// Cached pages affected by a members sync: member pages, plus the home page and
+// bill detail pages, which embed sponsor (member) data at depth 1.
+const MEMBERS_REVALIDATE_PATHS: RevalidatePath[] = [
+  '/',
+  '/members',
+  { path: '/members/[slug]', type: 'page' },
+  { path: '/bills/[slug]', type: 'page' },
+]
 
 type Logger = {
   info: (msg: string) => void
@@ -160,6 +170,8 @@ async function runMembersSyncLocked(
     logger.warn(
       `Members sync cancelled. Partial totals: ${JSON.stringify(totals)}. Watermark NOT advanced.`,
     )
+    if (totals.created + totals.updated > 0)
+      await revalidateFrontend(logger, MEMBERS_REVALIDATE_PATHS)
     return totals
   }
 
@@ -169,6 +181,7 @@ async function runMembersSyncLocked(
   logger.info(
     `Members sync complete in ${durationSec}s (started ${runStartedAt.toISOString()}, ended ${runCompletedAt.toISOString()}). Processed ${i} House members (skipped ${skippedNonHouse} non-House). Totals: ${JSON.stringify(totals)}.`,
   )
+  if (totals.created + totals.updated > 0) await revalidateFrontend(logger, MEMBERS_REVALIDATE_PATHS)
   return totals
 }
 
