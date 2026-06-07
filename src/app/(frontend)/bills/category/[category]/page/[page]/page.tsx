@@ -4,6 +4,8 @@ import config from '@payload-config'
 import { BillsListing, BILLS_PAGE_SIZE } from '@/components/BillsListing'
 import { CATEGORIES, categoryBySlug } from '@/lib/categories'
 
+export const revalidate = 900 // 15 minutes
+
 export async function generateStaticParams() {
   const payload = await getPayload({ config: await config })
 

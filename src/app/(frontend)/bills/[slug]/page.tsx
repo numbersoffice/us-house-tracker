@@ -15,6 +15,8 @@ import {
 } from '@/lib/format'
 import { categoryForPolicyArea } from '@/lib/categories'
 
+export const revalidate = 900 // 15 minutes
+
 export async function generateStaticParams() {
   const payload = await getPayload({ config: await config })
   const result = await payload.find({

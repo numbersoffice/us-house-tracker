@@ -3,6 +3,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { BillsListing, BILLS_PAGE_SIZE } from '@/components/BillsListing'
 
+export const revalidate = 900 // 15 minutes
+
 export async function generateStaticParams() {
   const payload = await getPayload({ config: await config })
   const result = await payload.find({

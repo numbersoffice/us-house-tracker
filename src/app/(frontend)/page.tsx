@@ -4,6 +4,8 @@ import config from '@payload-config'
 import { BillRow } from '@/components/BillRow'
 import type { Bill, Member } from '@/payload-types'
 
+export const revalidate = 900 // 15 minutes
+
 export default async function HomePage() {
   const payload = await getPayload({ config: await config })
 
