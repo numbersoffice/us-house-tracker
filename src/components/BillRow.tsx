@@ -15,7 +15,10 @@ export function BillRow({ bill }: Props) {
     <li className={`card ${styles.listItem}`}>
       <Link href={`/bills/${bill.slug}`} className={styles.headline}>
         <div className={styles.billHeadline}>
-          <h3>{bill.title} →</h3>
+          <h3>{bill.title}</h3>
+          <span className={styles.arrow} aria-hidden="true">
+            →
+          </span>
         </div>
       </Link>
       {sponsor && (
