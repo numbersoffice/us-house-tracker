@@ -242,11 +242,19 @@ async function isJobCancelled(payload: PayloadInstance, jobId: string): Promise<
   }
 }
 
+function parseSyncDate(value: unknown): Date | null {
+  if (typeof value !== 'string') return null
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+// The watermark is the start time of the last *successful* run, written only on
+// success. A failed or cancelled run leaves it untouched, so the next run resumes
+// from the last good start and re-covers whatever the failed run would have —
+// no gap, and no full re-sync needed.
 async function readWatermark(payload: PayloadInstance): Promise<Date | null> {
   const state = await payload.findGlobal({ slug: 'sync-state', overrideAccess: true })
-  if (!state.lastBillsSyncStartedAt) return null
-  const d = new Date(state.lastBillsSyncStartedAt)
-  return Number.isNaN(d.getTime()) ? null : d
+  return parseSyncDate(state.lastBillsSyncStartedAt)
 }
 
 async function writeWatermark(payload: PayloadInstance, startedAt: Date): Promise<void> {
@@ -255,6 +263,24 @@ async function writeWatermark(payload: PayloadInstance, startedAt: Date): Promis
     data: { lastBillsSyncStartedAt: startedAt.toISOString() },
     overrideAccess: true,
   })
+}
+
+// Lower bound for the next incremental sync: the last successful run's start minus
+// a 1h buffer. Anchoring on the *start* (not the end) is what closes the long-run
+// gap — anything updated while a multi-hour run was in flight has an updateDate
+// after that start, so the next run re-fetches it.
+function computeSyncWindow(watermark: Date | null): {
+  fromDateTime: string | undefined
+  description: string
+} {
+  if (!watermark) {
+    return { fromDateTime: undefined, description: 'no watermark found; running full sync' }
+  }
+  const fromDateTime = toCongressDateTime(new Date(watermark.getTime() - OVERLAP_BUFFER_MS))
+  return {
+    fromDateTime,
+    description: `incremental from ${fromDateTime} (last successful run started ${watermark.toISOString()}, − 1h buffer)`,
+  }
 }
 
 async function runBillsSync(
@@ -285,17 +311,10 @@ async function runBillsSyncLocked(
   totals: Totals,
 ): Promise<Totals> {
   const runStartedAt = new Date()
+  logger.info(`Bills sync started at ${runStartedAt.toISOString()}`)
 
-  const watermark = await readWatermark(payload)
-  const fromDateTime = watermark
-    ? toCongressDateTime(new Date(watermark.getTime() - OVERLAP_BUFFER_MS))
-    : undefined
-
-  if (fromDateTime) {
-    logger.info(`Incremental sync from ${fromDateTime} (watermark ${watermark!.toISOString()})`)
-  } else {
-    logger.info('No watermark found; running full sync')
-  }
+  const { fromDateTime, description } = computeSyncWindow(await readWatermark(payload))
+  logger.info(`Bills sync window: ${description}`)
 
   let cancelled = false
 
@@ -354,9 +373,11 @@ async function runBillsSyncLocked(
     return totals
   }
 
+  const runCompletedAt = new Date()
   await writeWatermark(payload, runStartedAt)
+  const durationSec = Math.round((runCompletedAt.getTime() - runStartedAt.getTime()) / 1000)
   logger.info(
-    `Bills sync complete. Totals: ${JSON.stringify(totals)}. Watermark advanced to ${runStartedAt.toISOString()}`,
+    `Bills sync complete in ${durationSec}s (started ${runStartedAt.toISOString()}, ended ${runCompletedAt.toISOString()}). Totals: ${JSON.stringify(totals)}.`,
   )
   return totals
 }

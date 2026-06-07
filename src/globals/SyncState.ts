@@ -107,7 +107,7 @@ export const SyncState: GlobalConfig = {
       type: 'date',
       admin: {
         description:
-          'Start time of the most recent successful bills sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.',
+          'Start time of the most recent successful bills sync. The next run reads from this time minus a 1h buffer (`fromDateTime`). Anchoring on the run’s start means records updated while a long run was in flight are still re-fetched next time. A failed run leaves this untouched, so the next run safely resumes from the last good start. Clear it to force a full re-sync.',
       },
     },
     {
@@ -115,7 +115,7 @@ export const SyncState: GlobalConfig = {
       type: 'date',
       admin: {
         description:
-          'Start time of the most recent successful members sync. Used as the lower bound (minus a 1h overlap buffer) for the next run’s Congress API `fromDateTime` filter.',
+          'Start time of the most recent successful members sync. The next run reads from this time minus a 1h buffer (`fromDateTime`). Anchoring on the run’s start means records updated while a long run was in flight are still re-fetched next time. A failed run leaves this untouched, so the next run safely resumes from the last good start. Clear it to force a full re-sync.',
       },
     },
     {
