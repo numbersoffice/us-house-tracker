@@ -27,7 +27,7 @@ export function BillRow({ bill }: Props) {
         </div>
       )}
       {category ? (
-        <Link href={`/bills?category=${category.slug}`} className="chip chip-sm">
+        <Link href={`/bills/category/${category.slug}`} className="chip chip-sm">
           {category.label}
         </Link>
       ) : (
