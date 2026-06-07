@@ -24,7 +24,7 @@ export function StateFilter({ value }: Props) {
         onChange={(e) => {
           const next = e.target.value
           startTransition(() => {
-            router.push(next ? `/members?state=${next}` : '/members')
+            router.push(next ? `/members/state/${next}` : '/members')
           })
         }}
       >
