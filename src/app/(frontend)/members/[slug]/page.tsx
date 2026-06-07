@@ -67,7 +67,17 @@ export default async function MemberProfilePage({
         </div>
       </header>
 
-      <h2>Bills they&apos;ve sponsored</h2>
+      <div className="section-heading">
+        <h2>Bills they&apos;ve sponsored</h2>
+        <a
+          className="rss-link"
+          href={`/members/${slug}/feed.xml`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Subscribe via RSS
+        </a>
+      </div>
       {billsResult.totalDocs === 0 ? (
         <p className="muted">
           No bills sponsored yet in the 119th Congress. (They may still be co-sponsoring others —
