@@ -1,4 +1,5 @@
 import type { CollectionConfig, Endpoint } from 'payload'
+import { revalidateMember, revalidateMemberDelete } from '../hooks/revalidateMember'
 
 const syncNowEndpoint: Endpoint = {
   path: '/sync-now',
@@ -29,6 +30,10 @@ export const Members: CollectionConfig = {
   endpoints: [syncNowEndpoint],
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateMember],
+    afterDelete: [revalidateMemberDelete],
   },
   fields: [
     {

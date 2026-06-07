@@ -2,6 +2,7 @@ import type { getPayload, TaskConfig } from 'payload'
 
 import { congressGet, paginate } from '../lib/congress-api'
 import { syncMember } from '../lib/sync-members-core'
+import { acquireSyncLock, releaseSyncLock } from '../lib/sync-lock'
 
 const CONGRESS = 119
 const BILL_TYPES = ['hr', 'hjres'] as const
@@ -262,6 +263,27 @@ async function runBillsSync(
   jobId?: string,
 ): Promise<Totals> {
   const totals: Totals = { created: 0, updated: 0, skipped: 0, errored: 0 }
+
+  // Mutual exclusion: never run two bills syncs at once (scheduled, autoRun, or
+  // manual). A members sync can still run alongside us — it holds a different lock.
+  if (!(await acquireSyncLock(payload, 'syncBills', jobId))) {
+    logger.warn('Another bills sync is already in progress; skipping this run.')
+    return totals
+  }
+
+  try {
+    return await runBillsSyncLocked(payload, logger, jobId, totals)
+  } finally {
+    await releaseSyncLock(payload, 'syncBills')
+  }
+}
+
+async function runBillsSyncLocked(
+  payload: PayloadInstance,
+  logger: Logger,
+  jobId: string | undefined,
+  totals: Totals,
+): Promise<Totals> {
   const runStartedAt = new Date()
 
   const watermark = await readWatermark(payload)
