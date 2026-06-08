@@ -27,6 +27,29 @@ function escapeXml(value: string): string {
   })
 }
 
+/** Escape the characters that are special inside HTML text/attributes. */
+function escapeHtml(value: string): string {
+  return value.replace(/[<>&"]/g, (c) => {
+    switch (c) {
+      case '<':
+        return '&lt;'
+      case '>':
+        return '&gt;'
+      case '&':
+        return '&amp;'
+      case '"':
+        return '&quot;'
+      default:
+        return c
+    }
+  })
+}
+
+/** Wrap HTML content in a CDATA section, splitting any literal "]]>" sequences. */
+function cdata(value: string): string {
+  return `<![CDATA[${value.replace(/]]>/g, ']]]]><![CDATA[>')}]]>`
+}
+
 /** Format a date as an RFC-822 string (required by RSS pubDate/lastBuildDate). */
 function toRfc822(value?: string | null): string | null {
   if (!value) return null
@@ -42,8 +65,15 @@ export type FeedBill = {
   billNumber: number
   introducedDate?: string | null
   latestActionDate?: string | null
-  latestActionText?: string | null
+  /** CRS summary HTML, or null/empty when one has not been published yet. */
+  summary?: string | null
+  /** Link to the full bill text on congress.gov. */
+  congressGovUrl?: string | null
 }
+
+/** Shown when a bill has no published CRS summary yet. */
+const SUMMARY_PLACEHOLDER =
+  'No summary yet. The Congressional Research Service usually publishes one a little while after a bill is introduced — check back soon.'
 
 export type FeedMember = {
   fullName: string
@@ -65,10 +95,21 @@ export function buildMemberFeed(member: FeedMember, bills: FeedBill[], baseUrl: 
       const billUrl = `${baseUrl}/bills/${bill.slug}`
       const billId = formatBillId(bill.billType, bill.billNumber)
       const introduced = formatDate(bill.introducedDate)
-      const descriptionParts = [billId]
-      if (introduced) descriptionParts.push(`Introduced ${introduced}`)
-      if (bill.latestActionText) descriptionParts.push(bill.latestActionText)
-      const description = descriptionParts.join(' · ')
+
+      const headerBits = [billId]
+      if (introduced) headerBits.push(`Introduced ${introduced}`)
+
+      // The summary is HTML, so the description is assembled as HTML and emitted
+      // inside a CDATA section (see cdata) rather than entity-escaped.
+      const descriptionParts = [`<p>${escapeHtml(headerBits.join(' · '))}</p>`]
+      const summary = bill.summary?.trim()
+      descriptionParts.push(summary ? summary : `<p>${escapeHtml(SUMMARY_PLACEHOLDER)}</p>`)
+      if (bill.congressGovUrl) {
+        descriptionParts.push(
+          `<p><a href="${escapeHtml(bill.congressGovUrl)}">Read the full bill on congress.gov →</a></p>`,
+        )
+      }
+      const description = descriptionParts.join('')
       const pubDate = toRfc822(bill.introducedDate ?? bill.latestActionDate)
 
       return [
@@ -77,7 +118,7 @@ export function buildMemberFeed(member: FeedMember, bills: FeedBill[], baseUrl: 
         `      <link>${escapeXml(billUrl)}</link>`,
         `      <guid isPermaLink="true">${escapeXml(billUrl)}</guid>`,
         pubDate ? `      <pubDate>${pubDate}</pubDate>` : null,
-        `      <description>${escapeXml(description)}</description>`,
+        `      <description>${cdata(description)}</description>`,
         '    </item>',
       ]
         .filter(Boolean)
