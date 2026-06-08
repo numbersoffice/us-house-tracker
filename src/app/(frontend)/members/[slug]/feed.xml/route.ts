@@ -44,7 +44,8 @@ const getFeedData = unstable_cache(
         billNumber: bill.billNumber,
         introducedDate: bill.introducedDate ?? null,
         latestActionDate: bill.latestActionDate ?? null,
-        latestActionText: bill.latestActionText ?? null,
+        summary: bill.summaries?.find((s) => s.text)?.text ?? null,
+        congressGovUrl: bill.congressGovUrl ?? null,
       })),
     }
   },

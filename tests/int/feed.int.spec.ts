@@ -12,7 +12,8 @@ const bills: FeedBill[] = [
     billNumber: 1,
     introducedDate: '2026-01-15',
     latestActionDate: '2026-02-01',
-    latestActionText: 'Referred to the Committee on Rules.',
+    summary: '<p>This bill improves <strong>things</strong>.</p>',
+    congressGovUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1',
   },
   {
     slug: '119-hjres-7',
@@ -21,7 +22,8 @@ const bills: FeedBill[] = [
     billNumber: 7,
     introducedDate: '2026-03-02',
     latestActionDate: '2026-03-10',
-    latestActionText: null,
+    summary: null,
+    congressGovUrl: null,
   },
 ]
 
@@ -59,5 +61,20 @@ describe('buildMemberFeed', () => {
 
   it('formats pubDate as an RFC-822 string', () => {
     expect(xml).toContain('<pubDate>Thu, 15 Jan 2026 00:00:00 GMT</pubDate>')
+  })
+
+  it('includes the bill summary instead of the latest action', () => {
+    expect(xml).toContain('This bill improves <strong>things</strong>.')
+    expect(xml).not.toContain('Referred to the Committee on Rules.')
+  })
+
+  it('shows a placeholder when a bill has no summary yet', () => {
+    expect(xml).toContain('No summary yet.')
+  })
+
+  it('links to the full bill text when available', () => {
+    expect(xml).toContain(
+      '<a href="https://www.congress.gov/bill/119th-congress/house-bill/1">Read the full bill on congress.gov →</a>',
+    )
   })
 })
