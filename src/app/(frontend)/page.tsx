@@ -19,23 +19,21 @@ export default async function HomePage() {
   return (
     <>
       <section className="hero">
-        <div className="hero-inner">
-          <p className="eyebrow">119th Congress · U.S. House</p>
-          <h1>
-            See your <span className="hero-mark">representatives</span> at work.
-          </h1>
-          <p>
-            For democracy to flourish, we need to be confident that our representatives are acting
-            in our best interest. This site helps to see what they are doing.
-          </p>
-          <div className="hero-actions">
-            <Link href="/members" className="btn btn-primary">
-              Find your representative →
-            </Link>
-            <Link href="/bills" className="btn btn-secondary">
-              Explore all bills
-            </Link>
-          </div>
+        <p className="eyebrow">119th Congress · U.S. House</p>
+        <h1>
+          See your <span className="hero-mark">representatives</span> at work.
+        </h1>
+        <p>
+          For democracy to flourish, we need to be confident that our representatives are acting in
+          our best interest. This site helps to see what they are doing.
+        </p>
+        <div className="hero-actions">
+          <Link href="/members" className="btn btn-primary">
+            Find your representative →
+          </Link>
+          <Link href="/bills" className="btn btn-secondary">
+            Explore all bills
+          </Link>
         </div>
       </section>
 

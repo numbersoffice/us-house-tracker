@@ -426,19 +426,17 @@ li.card:hover {
    Page sections
    ========================================================================= */
 
-/* Hero (home) — deep navy field, oversized type, thin red rule */
+/* Hero (home) — deep navy panel, oversized type, thin red rule.
+   Sits inside the regular `main` column so it lines up with the nav
+   and every other page. */
 .hero {
   position: relative;
   background: var(--color-navy);
   color: #ffffff;
   border-bottom: 3px solid var(--color-red);
-  /* Full-bleed: break out of the centered `main` column */
-  margin: calc(-1 * var(--space-5)) calc(50% - 50vw) var(--space-6);
-  padding: clamp(3.5rem, 8vw, 6rem) 1.25rem clamp(3.75rem, 8.5vw, 6.5rem);
-}
-.hero-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  margin: 0 0 var(--space-6);
+  padding: clamp(2.75rem, 6vw, 4.5rem) clamp(1.5rem, 4.5vw, 3.5rem);
 }
 .hero .eyebrow {
   color: rgba(255, 255, 255, 0.65);
