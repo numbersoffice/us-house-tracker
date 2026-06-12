@@ -1,18 +1,21 @@
 .photo {
   object-fit: cover;
-  border-radius: 4px;
-  background: var(--color-bg);
+  border-radius: var(--radius);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-line);
   flex-shrink: 0;
 }
 .sm {
   width: 56px;
   height: 70px;
+  border-radius: var(--radius-sm);
 }
 .md {
-  width: 80px;
-  height: 100px;
+  width: 84px;
+  height: 105px;
 }
 .lg {
-  width: 140px;
-  height: 175px;
+  width: 148px;
+  height: 185px;
+  border-radius: var(--radius-lg);
 }

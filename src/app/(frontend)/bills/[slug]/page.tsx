@@ -123,7 +123,12 @@ export default async function BillDetailPage({ params }: { params: Promise<{ slu
 
       {bill.congressGovUrl && (
         <p>
-          <a href={bill.congressGovUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            href={bill.congressGovUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary"
+          >
             Read the full bill on congress.gov →
           </a>
         </p>

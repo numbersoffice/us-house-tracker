@@ -1,6 +1,9 @@
 .flag {
-  width: 1em;
-  height: 1em;
+  width: 1.05em;
+  height: 1.05em;
   flex-shrink: 0;
-  transform: translateY(2px);
+  border-radius: 2px;
+  /* Optically center against cap height: text leaves empty descender
+     space below the baseline, so a flex-centered icon reads as too low. */
+  transform: translateY(-0.09em);
 }

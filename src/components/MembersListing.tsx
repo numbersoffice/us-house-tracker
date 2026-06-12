@@ -30,12 +30,13 @@ export async function MembersListing({ state }: Props) {
   return (
     <>
       <Breadcrumbs items={[{ label: 'Representatives' }]} />
-      <h1>Representatives</h1>
-      <p className="muted">
-        The {result.totalDocs.toLocaleString()} members of the U.S. House of Representatives in the
-        119th Congress. Filter by state, then tap a representative to see what they&apos;ve been
-        working on.
-      </p>
+      <header className="page-header">
+        <p className="eyebrow">The People&apos;s House</p>
+        <h1>Representatives</h1>
+        <p className="lede">
+          {`The ${result.totalDocs.toLocaleString()} members of the U.S. House of Representatives in the 119th Congress. Filter by state, then tap a representative to see what they've been working on.`}
+        </p>
+      </header>
 
       <div className="toolbar">
         <StateFilter value={stateFilter ?? ''} />

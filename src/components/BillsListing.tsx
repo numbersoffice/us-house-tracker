@@ -50,17 +50,20 @@ export async function BillsListing({ category = null, page }: Props) {
             : [{ label: 'Bills' }]
         }
       />
-      <h1>Bills</h1>
-      <p className="muted">
-        {category ? (
-          <>
-            Bills about <strong>{category.label.toLowerCase()}</strong> in the 119th Congress, sorted
-            by the most recent activity.
-          </>
-        ) : (
-          <>Every bill in the 119th Congress, sorted by the most recent activity.</>
-        )}
-      </p>
+      <header className="page-header">
+        <p className="eyebrow">Legislation</p>
+        <h1>Bills</h1>
+        <p className="lede">
+          {category ? (
+            <>
+              Bills about <strong>{category.label.toLowerCase()}</strong> in the 119th Congress,
+              sorted by the most recent activity.
+            </>
+          ) : (
+            <>Every bill in the 119th Congress, sorted by the most recent activity.</>
+          )}
+        </p>
+      </header>
 
       <nav className="category-bar" aria-label="Browse by topic">
         <Link href="/bills" className={`chip${!category ? ' active' : ''}`}>

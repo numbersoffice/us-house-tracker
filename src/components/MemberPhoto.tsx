@@ -10,9 +10,5 @@ type Props = {
 
 export function MemberPhoto({ src, alt = '', size = 'md' }: Props) {
   const className = `${styles.photo} ${styles[size]}`
-  return src ? (
-    <img src={src} alt={alt} className={className} />
-  ) : (
-    <div className={className} />
-  )
+  return src ? <img src={src} alt={alt} className={className} /> : <div className={className} />
 }
