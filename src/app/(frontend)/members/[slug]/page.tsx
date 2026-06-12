@@ -16,11 +16,7 @@ export async function generateStaticParams() {
   return result.docs.map((member) => ({ slug: member.slug }))
 }
 
-export default async function MemberProfilePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function MemberProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   return <MemberProfile slug={slug} page={1} />
 }

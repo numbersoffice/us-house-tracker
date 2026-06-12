@@ -1,21 +1,27 @@
 .memberCard {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-3) 1.1rem;
   text-decoration: none;
   color: var(--color-text);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--space-2);
+  gap: 0.6rem;
 }
 .memberCard:hover {
   color: var(--color-text);
+  text-decoration: none;
 }
 .name {
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 680;
+  font-size: 0.96rem;
+  line-height: 1.25;
+  color: var(--color-navy);
+}
+.memberCard:hover .name {
+  color: var(--color-blue);
 }
 .place {
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
